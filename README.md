@@ -9,3 +9,6 @@
 # Game
 This is simple Java-based graphic game without third-party libraries.  
 You can find rules [here](https://en.wikipedia.org/wiki/Twenty-One_(banking_game))
+# Important
+You need to find bundle of assets due to its absence in this repository.   
+Without it the game will throw exceptions at trying of loading those assets.

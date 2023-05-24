@@ -226,9 +226,9 @@ public class Game extends Canvas implements Runnable, MouseListener {
       long delta = 0, lastTime = 0;
       while(running){
          delta = System.currentTimeMillis() - lastTime;
-         if (delta >= 500)
+         if (delta >= 16){
 			   lastTime = System.currentTimeMillis();	
-            render();
+            render();}
       }
    }
 

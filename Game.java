@@ -18,15 +18,9 @@ public class Game extends Canvas implements Runnable, MouseListener {
    static int[][] cards = new int[12][4];
    static int[] num_cards = new int[2];
    static int[] card_sum = new int[2];
-   static int balance = 100, bank = 100, stake = 0;
+   static int balance = 100, bank = 100, stake = 0, num_cards_in_deck = 36;
    static Sprite shirt, back, box;
    static Sprite[][] spritescard = new Sprite[12][4];
-
-   public void start() {
-      running = true;
-      new Thread(this).start();
-   }
-
 
    public void stake(int sum) {
       balance -= sum;
@@ -43,6 +37,7 @@ public class Game extends Canvas implements Runnable, MouseListener {
       hand[player][num_cards[player]][0] = a;
       hand[player][num_cards[player]][1] = b;
       num_cards[player]++;
+      num_cards_in_deck--;
    }
 
    public void check() {
@@ -157,9 +152,11 @@ public class Game extends Canvas implements Runnable, MouseListener {
       g.setFont(new Font("Monospaced", Font.PLAIN, 15));
       g.clearRect(0, 0, WIDTH, HEIGHT);
       back.draw(g,0,0);
-
+      
       box.center_draw(g,950,400);
       shirt.center_draw(g,1050,400);
+      g.setColor(Color.WHITE);
+      setTextCenter(g, "Number of cards in deck: " + num_cards_in_deck, 1000, 525);
 
       drawhand(g, 0);
       drawhand(g, 1);
@@ -233,6 +230,11 @@ public class Game extends Canvas implements Runnable, MouseListener {
 			   lastTime = System.currentTimeMillis();	
             render();
       }
+   }
+
+   public void start() {
+      running = true;
+      new Thread(this).start();
    }
 
    public static void main(String[] args) {

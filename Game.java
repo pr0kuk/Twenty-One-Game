@@ -3,21 +3,25 @@ import java.awt.image.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.EmptyStackException;
+import java.net.URL;
+import javax.imageio.ImageIO;
+import java.io.IOException;
 
 public class Game extends Canvas implements Runnable, MouseListener {
    static Boolean running = true, win = false, lose = false, startflag = true;
    public static final String NAME = "Twenty-One Java Game";
-   public static final int WIDTH  = 2000;
-   public static final int HEIGHT = 1000;
+   public static final int WIDTH  = 2000, HEIGHT = 1000;
+   public static final int CARDW = 90, CARDH = 140;
+   public static final int HANDH = 600, RIGHTHANDV = 1200, DISTANCE = 800;
+   public static final int STAKEH = 50, LEFTSTAKEV = 885, STAKESIZE = 50;
    static int[][][] hand = new int[2][9][2];
-   static int[][] cards = new int[36][4];
+   static int[][] cards = new int[12][4];
    static int[] num_cards = new int[2];
    static int[] card_sum = new int[2];
-   static int balance = 100;
-   static int bank = 100;
-   static int stake = 0;
-   static int ready = 0;
-   static int card = 0;
+   static int balance = 100, bank = 100, stake = 0;
+   static int ready = 0, card = 0;
+   static Sprite shirt, back, box;
+   static Sprite[][] spritescard = new Sprite[12][4];
 
    public void start() {
       running = true;
@@ -27,26 +31,35 @@ public class Game extends Canvas implements Runnable, MouseListener {
    public void drawhand(Graphics g, int player) {
       for (int i = 0; i < num_cards[player]; i++)
       {
-         g.setColor(Color.GRAY);
-         g.drawRect(1200+i*75-800*player, 800, 65, 100); 
-         g.setColor(Color.BLACK);
-         g.drawString("Card: " + hand[player][i][0] + " " + hand[player][i][1], 1220+i*75-800*player, 930);
+         spritescard[hand[player][i][0]][hand[player][i][1]].center_draw(g, RIGHTHANDV+(int)(i*(CARDW)*1.15)-DISTANCE*player, HANDH);
+         g.setColor(Color.WHITE);
+         setTextCenter(g, "Card: " + hand[player][i][0], RIGHTHANDV+(int)(i*(CARDW)*1.15)-DISTANCE*player, HANDH+(int)(0.8*CARDH));
       }
+      g.setColor(Color.WHITE);
       String ss = "Your";
       if (player == 0)
          ss ="Bot";
-      g.drawString(ss + " sum:" + card_sum[player], 1200-800*player, 970);
+      g.drawString(ss + " sum: " + card_sum[player], 1525-1110*player, HANDH+150);
    }
    public void drawstakes(Graphics g) {
-      g.drawString("Choose Stake", 790, 310);
-      g.setColor(Color.RED);
-      g.drawRect(770, 330, 50, 50);
-      g.setColor(Color.RED);
-      g.drawRect(770, 390, 50, 50);
-      g.setColor(Color.RED);
-      g.drawRect(830, 330, 50, 50);
-      g.setColor(Color.RED);
-      g.drawRect(830, 390, 50, 50);
+      g.setColor(Color.WHITE);
+      setTextCenter(g,"Choose Stake", 1000, STAKEH+65);
+      for (int i  =0; i < 4; i++)
+      {
+         g.setColor(Color.RED);
+         g.fillRect(LEFTSTAKEV + (int)(i*1.2*STAKESIZE), STAKEH, STAKESIZE, STAKESIZE);
+         g.setColor(Color.WHITE);
+         setTextCenter(g,""+(i+1)*5, LEFTSTAKEV+25 + (int)(i*1.2*STAKESIZE), STAKEH+25);
+      }
+   }
+   public void setTextCenter(Graphics g, String s, int x, int y)
+   {
+      int sw = (int)g.getFontMetrics().getStringBounds(s, g).getWidth();
+      int sh = (int)g.getFontMetrics().getStringBounds(s, g).getHeight();
+      int xc = x - sw / 2;
+      int yc = y - sh / 2;
+      //System.out.println(xc+" "+yc+" "+sw+" "+sh);
+      g.drawString(s, xc, y);
    }
    public void  render() {
       BufferStrategy bs = getBufferStrategy(); 
@@ -56,25 +69,26 @@ public class Game extends Canvas implements Runnable, MouseListener {
          return;
       }
       Graphics g = bs.getDrawGraphics();
-      g.setFont(new Font("Monospaced", Font.PLAIN, 12));
+      g.setFont(new Font("Monospaced", Font.PLAIN, 15));
       g.clearRect(0, 0, WIDTH, HEIGHT);
-      setBackground(Color.WHITE);
+      back.draw(g,0,0);
 
-      g.setColor(Color.GRAY);
-      g.drawRect(800, 600, 65, 100); 
+      box.center_draw(g,950,400);
+      shirt.center_draw(g,1050,400);
+
 
       drawhand(g, 0);
       drawhand(g, 1);
 
-      g.setColor(Color.BLACK);
+      g.setColor(Color.WHITE);
       g.drawString("Balance: " + balance, 10, 20);
       g.drawString("Bank: " + bank, 10, 40);
       g.drawString("Stake: " + stake, 10, 60);
 
       if (win == true || lose == true || startflag == true) {
          g.setColor(Color.RED);
-         g.drawRect(700, 500, 300, 50);
-         g.setColor(Color.BLACK);
+         g.fillRect(850, 250, 300, 50);
+         g.setColor(Color.WHITE);
          String ss;
          if (win == true)
             ss = "You won!";
@@ -82,19 +96,19 @@ public class Game extends Canvas implements Runnable, MouseListener {
             ss = "You lost!";
          else
             ss = "Welcome to Twenty-One Java Game";
-         g.drawString(ss, 760, 525);
+         setTextCenter(g,ss, 1000, 275);
          drawstakes(g);
       }
       else {
          g.setColor(Color.RED);
-         g.drawRect(1800, 700, 150, 50);
-         g.setColor(Color.BLACK);
-         g.drawString("Get card", 1825, 725);
+         g.fillRect(1800, 800, 150, 50);
+         g.setColor(Color.WHITE);
+         setTextCenter(g, "Get card", 1875, 825);
 
          g.setColor(Color.RED);
-         g.drawRect(1800, 775, 150, 50);
-         g.setColor(Color.BLACK);
-         g.drawString("End Turn", 1825, 800);
+         g.fillRect(1800, 875, 150, 50);
+         g.setColor(Color.WHITE);
+         setTextCenter(g, "End Turn", 1875, 900);
       }
       g.dispose();
       bs.show();
@@ -112,9 +126,9 @@ public class Game extends Canvas implements Runnable, MouseListener {
    public void get_card(int player) {
       int a, b;
       do {
-         a = (int)(Math.random() * 9) + 2;
+         a = (int)(Math.random() * 10) + 2;
          b = (int)(Math.random() * 4);
-      } while (cards[a][b] == 1);
+      } while (cards[a][b] == 1 || a==5);
       cards[a][b] = 1;
       card_sum[player] += a;
       hand[player][num_cards[player]][0] = a;
@@ -144,22 +158,22 @@ public class Game extends Canvas implements Runnable, MouseListener {
 
    public void update(int X, int Y) {
       if (lose == false && win == false && startflag == false) {
-         if (ClickInRect(X,Y, 1800, 700, 100, 50) == true) {
+         if (ClickInRect(X,Y, 1800, 800, 100, 50) == true) {
             get_card(1);
             check();
          }
-         if (ClickInRect(X,Y, 1800, 775, 100, 50) == true) {
+         if (ClickInRect(X,Y, 1800, 875, 100, 50) == true) {
             play_bot();
          }
       }
       else {
-         if (ClickInRect(X,Y, 770, 330, 50, 50) == true)
+         if (ClickInRect(X,Y, LEFTSTAKEV, STAKEH, STAKESIZE, STAKESIZE) == true)
             stake(5);
-         else if (ClickInRect(X,Y, 770, 390, 50, 50) == true)
+         else if (ClickInRect(X,Y, LEFTSTAKEV +(int)(1.2*STAKESIZE), STAKEH, STAKESIZE, STAKESIZE) == true)
             stake(10);
-         else if (ClickInRect(X,Y, 830, 330, 50, 50) == true)
+         else if (ClickInRect(X,Y, LEFTSTAKEV +(int)(1.2*2*STAKESIZE), STAKEH, STAKESIZE, STAKESIZE) == true)
             stake(15);
-         else if (ClickInRect(X,Y, 830, 390, 50, 50) == true)
+         else if (ClickInRect(X,Y, LEFTSTAKEV +(int)(1.2*3*STAKESIZE), STAKEH, STAKESIZE, STAKESIZE) == true)
             stake(20);
          else
             return;
@@ -184,9 +198,57 @@ public class Game extends Canvas implements Runnable, MouseListener {
       stake = 0;
       win = true;  
    }
-
+   public void loadsprites()
+   {
+      back = new Sprite("textures\\table.png").width(WIDTH).height(HEIGHT);
+      box = new Sprite("textures\\d00237box.jpg").width(CARDW).height(CARDH);
+      shirt = new Sprite("textures\\shirt.jpg").width(CARDW).height(CARDH);
+      String ss, s1 ="", s2="";
+      for (int i = 2; i <= 11; i++)
+      {
+         if (i == 5) i++;
+         switch(i) {
+            case (2):
+               s1 = "U";
+               break;
+            case(3):
+               s1 = "O";
+               break;
+            case(4):
+               s1 = "K";
+               break;
+            case(11):
+               s1 = "A";
+               break;
+            default:
+               s1 = ""+i;
+         }
+         for (int j = 0; j < 4; j++)
+         {
+            switch(j) {
+               case(0):
+                  s2 = "c";
+                  break;
+               case(1):
+                  s2 = "d";
+                  break;
+               case(2):
+                  s2 = "h";
+                  break;
+               case(3):
+                  s2 = "s";
+                  break;
+            }
+            ss = s2 + s1;
+            //System.out.println("textures\\d00237d03" + ss + ".jpg");
+            spritescard[i][j] = new Sprite("textures\\d00237d03" + ss + ".jpg").width(CARDW).height(CARDH);
+         }
+      }
+   }
    public void run() {
       addMouseListener(this);
+      loadsprites();
+      
       while(running) {
          render();
       }

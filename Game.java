@@ -29,6 +29,8 @@ public class Game extends Canvas implements Runnable, MouseListener {
       stake = sum;
    }
    public void get_card(int player) {
+      if (num_cards_in_deck == 0)
+         shuffle();
       int a, b;
       do {
          a = (int)(Math.random() * 10) + 2;
@@ -217,18 +219,19 @@ public class Game extends Canvas implements Runnable, MouseListener {
    }
 
    public void shuffle() {
-      // num_cards_in_deck = 36 - num_cards[1];
-      // for (int i = 0; i < 12; i++)
-      //    for (int j = 0; j < 4; j++)
-      //       cards[i][j] = 0;
-      // for (int i = 0; i <num_cards[1]; i++)
-      //    cards[hand[1][i][0]][hand[1][i][1]] = 1;
-
       num_cards_in_deck = 36;
       for (int i = 0; i < 12; i++)
          for (int j = 0; j < 4; j++)
             cards[i][j] = 0;
-      pass();
+      if (banner == true)
+         pass();
+      else {
+         num_cards_in_deck = 36 - num_cards[1] - num_cards[0];
+         for (int i = 0; i <num_cards[1]; i++)
+            cards[hand[1][i][0]][hand[1][i][1]] = 1;
+         for (int i = 0; i <num_cards[0]; i++)
+            cards[hand[0][i][0]][hand[0][i][1]] = 1;
+      }
    }
 
    public void pass() {            

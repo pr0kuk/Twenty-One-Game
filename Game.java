@@ -141,7 +141,7 @@ public class Game extends Canvas implements Runnable, MouseListener {
       g.drawString(s, xc, y);
    }
 
-   public void  render() {
+   public void paint() {
       BufferStrategy bs = getBufferStrategy(); 
       if (bs == null) {
          createBufferStrategy(2);
@@ -149,8 +149,9 @@ public class Game extends Canvas implements Runnable, MouseListener {
          return;
       }
       Graphics g = bs.getDrawGraphics();
-      g.setFont(new Font("Monospaced", Font.PLAIN, 15));
       g.clearRect(0, 0, WIDTH, HEIGHT);
+
+      g.setFont(new Font("Monospaced", Font.PLAIN, 15));
       back.draw(g,0,0);
       
       box.center_draw(g,950,400);
@@ -195,7 +196,7 @@ public class Game extends Canvas implements Runnable, MouseListener {
       bs.show();
    }
 
-   public void update(int X, int Y) {
+   public void upd(int X, int Y) {
       if (lose == false && win == false && startflag == false) {
          if (ClickInRect(X,Y, 1800, 800, 100, 50) == true) {
             get_card(1);
@@ -220,16 +221,10 @@ public class Game extends Canvas implements Runnable, MouseListener {
       }
    }
 
-   public void run() {
-      addMouseListener(this);
-      loadsprites();
-      long delta = 0, lastTime = 0;
-      while(running){
-         delta = System.currentTimeMillis() - lastTime;
-         if (delta >= 16){
-			   lastTime = System.currentTimeMillis();	
-            render();}
-      }
+
+   public Game() {
+      setPreferredSize(new Dimension(WIDTH, HEIGHT));
+      start();
    }
 
    public void start() {
@@ -237,9 +232,21 @@ public class Game extends Canvas implements Runnable, MouseListener {
       new Thread(this).start();
    }
 
+   public void run() {
+      loadsprites();
+      long delta = 0, lastTime = 0;
+      addMouseListener(this);
+      while(running){
+         delta = System.currentTimeMillis() - lastTime;
+         if (delta >= 16){
+               lastTime = System.currentTimeMillis();	
+               paint();
+            }
+      }
+   }
+
    public static void main(String[] args) {
       Game game = new Game();
-      game.setPreferredSize(new Dimension(WIDTH, HEIGHT));
       JFrame frame = new JFrame(Game.NAME);
       frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       frame.setLayout(new BorderLayout());
@@ -247,9 +254,7 @@ public class Game extends Canvas implements Runnable, MouseListener {
       frame.pack();
       frame.setResizable(false);
       frame.setVisible(true);
-      game.start();
    }
-
 
    public Boolean ClickInRect(int X, int Y, int x1, int y1, int x2, int y2) {
       if (X > x1 && X < (x2+x1) && Y > y1 && Y < (y2+y1))
@@ -259,6 +264,6 @@ public class Game extends Canvas implements Runnable, MouseListener {
    public void mouseClicked(MouseEvent e) {}
    public void mouseEntered(MouseEvent e) {}
    public void mouseExited(MouseEvent e) {}
-   public void mousePressed(MouseEvent e) {update(e.getX(), e.getY());}
+   public void mousePressed(MouseEvent e) {upd(e.getX(), e.getY());}
    public void mouseReleased(MouseEvent e) {}
 }

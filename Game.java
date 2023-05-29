@@ -6,14 +6,16 @@ import java.util.EmptyStackException;
 import java.net.URL;
 import javax.imageio.ImageIO;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class Game extends Canvas implements Runnable, MouseListener {
-   static Boolean running = true, win = false, lose = false, startflag = true;
+   static Boolean running = true, win = false, lose = false, startflag = true, banner = false;
    public static final String NAME = "Twenty-One Java Game";
    public static final int WIDTH  = 2000, HEIGHT = 1000;
    public static final int CARDW = 90, CARDH = 140;
    public static final int HANDH = 600, RIGHTHANDV = 1200, DISTANCE = 800;
-   public static final int STAKEH = 50, LEFTSTAKEV = 885, STAKESIZE = 50;
+   public static final int STAKEH = 20, LEFTSTAKEV = 885, STAKESIZE = 50;
+   public static final int LEFTBUTTONV = 1800, BUTTONH = 810, BUTTOND = 60;
    static int[][][] hand = new int[2][9][2];
    static int[][] cards = new int[12][4];
    static int[] num_cards = new int[2];
@@ -51,7 +53,7 @@ public class Game extends Canvas implements Runnable, MouseListener {
       do {
          get_card(0);
       } while(card_sum[0] < 17);
-      if (Math.abs(card_sum[0]-21) <= Math.abs(card_sum[1]-21))
+      if (card_sum[0] <= 21 && card_sum[0] >= card_sum[1])
          lose();
       else
          win();
@@ -66,7 +68,7 @@ public class Game extends Canvas implements Runnable, MouseListener {
       bank -= stake;
       balance += (2 * stake);
       stake = 0;
-      win = true;  
+      win = true;
    }
 
    public void loadsprites()
@@ -123,14 +125,23 @@ public class Game extends Canvas implements Runnable, MouseListener {
    }
    public void drawstakes(Graphics g) {
       g.setColor(Color.WHITE);
-      setTextCenter(g,"Choose Stake", 1000, STAKEH+65);
-      for (int i  =0; i < 4; i++)
+      setTextCenter(g,"Choose Stake or", 1000, STAKEH+65);
+      for (int i  = 0; i < 4; i++)
       {
          g.setColor(Color.RED);
          g.fillRect(LEFTSTAKEV + (int)(i*1.2*STAKESIZE), STAKEH, STAKESIZE, STAKESIZE);
          g.setColor(Color.WHITE);
          setTextCenter(g,""+(i+1)*5, LEFTSTAKEV+25 + (int)(i*1.2*STAKESIZE), STAKEH+25);
       }
+      g.setColor(Color.RED);
+      g.fillRect(LEFTSTAKEV, STAKEH+75, STAKESIZE+(int)(3*1.2*STAKESIZE), STAKESIZE);
+      g.setColor(Color.WHITE);
+      setTextCenter(g,"Pass", 1000, STAKEH+100);
+
+      g.setColor(Color.RED);
+      g.fillRect(LEFTBUTTONV, BUTTONH+2*BUTTOND, 150, 50);
+      g.setColor(Color.WHITE);
+      setTextCenter(g, "Shuffle", LEFTBUTTONV + 75, BUTTONH + 25 + BUTTOND*2);
    }
    public void setTextCenter(Graphics g, String s, int x, int y)
    {
@@ -179,34 +190,77 @@ public class Game extends Canvas implements Runnable, MouseListener {
          else
             ss = "Welcome to Twenty-One Java Game";
          setTextCenter(g,ss, 1000, 275);
+      }
+      if (banner)
          drawstakes(g);
-      }
-      else {
-         g.setColor(Color.RED);
-         g.fillRect(1800, 800, 150, 50);
-         g.setColor(Color.WHITE);
-         setTextCenter(g, "Get card", 1875, 825);
-
-         g.setColor(Color.RED);
-         g.fillRect(1800, 875, 150, 50);
-         g.setColor(Color.WHITE);
-         setTextCenter(g, "End Turn", 1875, 900);
-      }
+      else
+         drawbuttons(g);
       g.dispose();
       bs.show();
    }
 
+   public void drawbuttons(Graphics g) {
+         g.setColor(Color.RED);
+         g.fillRect(LEFTBUTTONV, BUTTONH, 150, 50);
+         g.setColor(Color.WHITE);
+         setTextCenter(g, "Get card", LEFTBUTTONV + 75, BUTTONH + 25);
+
+         g.setColor(Color.RED);
+         g.fillRect(LEFTBUTTONV, BUTTONH+BUTTOND, 150, 50);
+         g.setColor(Color.WHITE);
+         setTextCenter(g, "End Turn", LEFTBUTTONV + 75, BUTTONH + 25 + BUTTOND);
+
+         // g.setColor(Color.RED);
+         // g.fillRect(LEFTBUTTONV, BUTTONH+2*BUTTOND, 150, 50);
+         // g.setColor(Color.WHITE);
+         // setTextCenter(g, "Shuffle", LEFTBUTTONV + 75, BUTTONH + 25 + BUTTOND*2);
+   }
+
+   public void shuffle() {
+      // num_cards_in_deck = 36 - num_cards[1];
+      // for (int i = 0; i < 12; i++)
+      //    for (int j = 0; j < 4; j++)
+      //       cards[i][j] = 0;
+      // for (int i = 0; i <num_cards[1]; i++)
+      //    cards[hand[1][i][0]][hand[1][i][1]] = 1;
+
+      num_cards_in_deck = 36;
+      for (int i = 0; i < 12; i++)
+         for (int j = 0; j < 4; j++)
+            cards[i][j] = 0;
+      pass();
+   }
+
+   public void pass() {            
+      card_sum[0] = card_sum[1] = num_cards[0] = num_cards[1] = 0;
+      get_card(1);
+   }
+
    public void upd(int X, int Y) {
-      if (lose == false && win == false && startflag == false) {
-         if (ClickInRect(X,Y, 1800, 800, 100, 50) == true) {
+      if (lose == false && win == false && startflag == false && banner == false) {
+         if (ClickInRect(X,Y, LEFTBUTTONV, BUTTONH, 150, 50) == true) {
             get_card(1);
             check();
          }
-         if (ClickInRect(X,Y, 1800, 875, 100, 50) == true)
+         if (ClickInRect(X,Y, LEFTBUTTONV, BUTTONH+BUTTOND, 150, 50) == true)
             play_bot();
+         // if (ClickInRect(X,Y, LEFTBUTTONV, BUTTONH+2*BUTTOND, 150, 50) == true)
+         //    shuffle();
+      }
+      else if (banner == false) {
+         if (ClickInRect(X, Y, 850, 250, 300, 50) == true) {
+            card_sum[0] = card_sum[1] = num_cards[0] = num_cards[1] = 0;
+            get_card(1);
+            lose = win = startflag = false;
+            banner = true;
+         }
       }
       else {
-         if (ClickInRect(X, Y, LEFTSTAKEV, STAKEH, STAKESIZE, STAKESIZE) == true)
+         if (ClickInRect(X,Y, LEFTBUTTONV, BUTTONH+2*BUTTOND, 150, 50) == true) {
+            shuffle();
+            return;
+         }
+         else if (ClickInRect(X, Y, LEFTSTAKEV, STAKEH, STAKESIZE, STAKESIZE) == true)
             stake(5);
          else if (ClickInRect(X, Y, LEFTSTAKEV + (int)(1.2*1*STAKESIZE), STAKEH, STAKESIZE, STAKESIZE) == true)
             stake(10);
@@ -214,10 +268,12 @@ public class Game extends Canvas implements Runnable, MouseListener {
             stake(15);
          else if (ClickInRect(X, Y, LEFTSTAKEV + (int)(1.2*3*STAKESIZE), STAKEH, STAKESIZE, STAKESIZE) == true)
             stake(20);
-         else
+         else if (ClickInRect(X, Y, LEFTSTAKEV, STAKEH+75, STAKESIZE+(int)(3*1.2*STAKESIZE), STAKESIZE) == true){
+            pass();
             return;
-         card_sum[0] = card_sum[1] = num_cards[0] = num_cards[1] = 0;
-         lose = win = startflag = false;
+         } else
+            return;
+         banner = false;
       }
    }
 

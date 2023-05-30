@@ -12,23 +12,23 @@ public class Game extends Canvas implements Runnable, MouseListener {
    static Boolean running = true, win = false, lose = false, startflag = true, banner = false;
    public static final String NAME = "Twenty-One Java Game";
    public static final int WIDTH  = 2000, HEIGHT = 1000;
-   public static final int CARDW = 90, CARDH = 140;
-   public static final int HANDH = 600, RIGHTHANDV = 1200, DISTANCE = 800;
-   public static final int STAKEH = 20, LEFTSTAKEV = 885, STAKESIZE = 50;
-   public static final int LEFTBUTTONV = 1800, BUTTONH = 810, BUTTOND = 60;
-   static int[][][] hand = new int[2][9][2];
-   static int[][] cards = new int[12][4];
-   static int[] num_cards = new int[2];
-   static int[] card_sum = new int[2];
-   static int balance = 100, bank = 100, stake = 0, num_cards_in_deck = 36;
-   static Sprite shirt, back, box;
-   static Sprite[][] spritescard = new Sprite[12][4];
+   private static final int CARDW = 90, CARDH = 140;
+   private static final int HANDH = 600, RIGHTHANDV = 1200, DISTANCE = 800;
+   private static final int STAKEH = 20, LEFTSTAKEV = 885, STAKESIZE = 50;
+   private static final int LEFTBUTTONV = 1800, BUTTONH = 810, BUTTOND = 60;
+   private int[][][] hand = new int[2][9][2];
+   private int[][] cards = new int[12][4];
+   private int[] num_cards = new int[2];
+   private int[] card_sum = new int[2];
+   private int balance = 100, bank = 100, stake = 0, num_cards_in_deck = 36;
+   private Sprite shirt, back, box;
+   private Sprite[][] spritescard = new Sprite[12][4];
 
-   public void stake(int sum) {
+   private void stake(int sum) {
       balance -= sum;
       stake = sum;
    }
-   public void get_card(int player) {
+   private void get_card(int player) {
       if (num_cards_in_deck == 0)
          shuffle();
       int a, b;
@@ -44,14 +44,14 @@ public class Game extends Canvas implements Runnable, MouseListener {
       num_cards_in_deck--;
    }
 
-   public void check() {
+   private void check() {
       if (card_sum[1] > 21)
          lose();
       else if (card_sum[1] == 21)
          win();
    }
 
-   public void play_bot() {
+   private void play_bot() {
       do {
          get_card(0);
       } while(card_sum[0] < 17);
@@ -61,12 +61,12 @@ public class Game extends Canvas implements Runnable, MouseListener {
          win();
    }
 
-   public void lose() {
+   private void lose() {
       bank += stake;
       stake = 0;
       lose = true;
    }
-   public void win() {
+   private void win() {
       bank -= stake;
       balance += (2 * stake);
       stake = 0;
@@ -195,7 +195,7 @@ public class Game extends Canvas implements Runnable, MouseListener {
       }
       if (banner)
          drawstakes(g);
-      else
+      else if (win == false && lose == false && startflag == false)
          drawbuttons(g);
       g.dispose();
       bs.show();
@@ -218,7 +218,7 @@ public class Game extends Canvas implements Runnable, MouseListener {
          // setTextCenter(g, "Shuffle", LEFTBUTTONV + 75, BUTTONH + 25 + BUTTOND*2);
    }
 
-   public void shuffle() {
+   private void shuffle() {
       num_cards_in_deck = 36;
       for (int i = 0; i < 12; i++)
          for (int j = 0; j < 4; j++)
@@ -234,7 +234,7 @@ public class Game extends Canvas implements Runnable, MouseListener {
       }
    }
 
-   public void pass() {            
+   private void pass() {            
       card_sum[0] = card_sum[1] = num_cards[0] = num_cards[1] = 0;
       get_card(1);
    }
